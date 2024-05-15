@@ -1,44 +1,71 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
     Rigidbody RB;
-    bool isGrounded, isJumping;
-    float JumpForce = 0;
-    float JumpTimer = 0;
+    bool isGrounded = true;
+
+    [Header("Player Settings")]
+    [Range(0f, 15f)]
+    [SerializeField] float jumpHeight;
+
+    [Tooltip("The amount gravity effects the player as a percentage")]
+    [Range(0f, 100f)]
+    [SerializeField] float jumpGravity;
+    bool applyJumpGravity;
+
+    [Range(0f, 15f)]
+    [SerializeField] float intialSpeed;
+
+    [Tooltip("Distance needed to reach next speedup")]
+    [SerializeField] int disThreshold;
+    [Range(1f, 100f)]
+
+    [Tooltip("Speedup amount as percentage")]
+    [SerializeField] float speedupAmount;
+    bool spedup = false;
 
     // Start is called before the first frame update
     void Start()
     {
         RB = GetComponent<Rigidbody>();
-        RB.velocity = new Vector2(20, 0);
+        RB.velocity = new Vector2(intialSpeed, 0);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetButton("Jump")) isJumping = true;
-        else if (isGrounded) isJumping = false;
-
-        if (isGrounded && (Input.GetButtonUp("Jump") || JumpForce >= 10))
+        // The jump part of the jump
+        if (Input.GetButton("Jump") && isGrounded)
         {
             isGrounded = false;
-            if (JumpForce >= 10) JumpForce = 10; 
-            RB.velocity = new Vector2(RB.velocity.x, JumpForce);
-            print("Jump " + JumpForce);
+            RB.velocity = new Vector2(RB.velocity.x, jumpHeight);
         }
 
-        if (isJumping) JumpForce += Time.deltaTime * 60;
-        else JumpForce = 0;
+        // When player is mid jump and is holding the button make them fall slower so when they let go they fall fast
+        if (Input.GetButton("Jump") && !isGrounded) applyJumpGravity = true;
+        else if (!Input.GetButton("Jump") && !isGrounded) applyJumpGravity = false;
 
+        // Increased speed by speedupAmount every mutliple of disTreshold (increase by 1 every 100 metres, etc.)
+        // and when it does the first time it speeds it up, it'll toggle speedup to true so it doesn't get repeated
+        if ((int)this.transform.position.x % disThreshold == 0)
+        {
+            if (spedup) return;
+            else spedup = true;
 
-        //print(isJumping + ", " + isGrounded + ", " + JumpForce);
+            // For some reason the force applied isn't the force applied: it's 50x smaller? i.e 1 = 0.02
+            RB.AddForce(new Vector2(speedupAmount / 2, 0));
+        }
+        else if ((int)this.transform.position.x % disThreshold == 1) spedup = false;
     }
 
-    private void OnCollisionEnter(Collision collision)
+    void FixedUpdate()
+    {
+        // Applies jumpGravity to conteract gravity as a percentage (25% = 25% of regular gravity)
+        if (applyJumpGravity) RB.AddForce(Physics.gravity * (jumpGravity / 100) - Physics.gravity, ForceMode.Acceleration);
+    }
+
+    void OnCollisionEnter(Collision collision)
     {
         isGrounded = true;
     }
