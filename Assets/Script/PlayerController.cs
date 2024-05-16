@@ -3,7 +3,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     Rigidbody RB;
-    bool isGrounded = true;
+    bool isGrounded = false;
 
     [Header("Player Settings")]
     [Range(0f, 15f)]
@@ -25,11 +25,22 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float speedupAmount;
     bool spedup = false;
 
+    [Header("Audio")]
+    [SerializeField] AudioClip audioJump;
+    [SerializeField] AudioClip audioFall;
+    [SerializeField] AudioClip audioHit;
+    [SerializeField] AudioClip audioDie;
+    AudioSource audioSource;
+    float audioVolume;
+
     // Start is called before the first frame update
     void Start()
     {
         RB = GetComponent<Rigidbody>();
         RB.velocity = new Vector2(intialSpeed, 0);
+
+        audioSource = RB.gameObject.GetComponent<AudioSource>();
+        audioVolume = PlayerPrefs.GetFloat("Volume");
     }
 
     // Update is called once per frame
@@ -38,6 +49,8 @@ public class PlayerController : MonoBehaviour
         // The jump part of the jump
         if (Input.GetButton("Jump") && isGrounded)
         {
+            audioSource.PlayOneShot(audioJump, audioVolume);
+
             isGrounded = false;
             RB.velocity = new Vector2(RB.velocity.x, jumpHeight);
         }
@@ -62,8 +75,9 @@ public class PlayerController : MonoBehaviour
         // GameOvers the player whenever they move too slow or fall
         if (RB.velocity.x < 5 || transform.position.y < -20)
         {
+            this.enabled = false;
+            audioSource.PlayOneShot(audioDie, audioVolume);
             GameObject.Find("GameManger").GetComponent<GameManger>().GameOver();
-            Destroy(this.gameObject);
         }
     }
 
@@ -75,6 +89,12 @@ public class PlayerController : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
+
+        // Checks if've hit the sides of the buildings
+        if (collision.GetContact(0).normal.x != 0) audioSource.PlayOneShot(audioHit, audioVolume);
+
+        // Plays audio only if you've hit the ground from a jump
+        if (RB.velocity.y > 1) audioSource.PlayOneShot(audioFall, audioVolume);
         isGrounded = true;
     }
 }
