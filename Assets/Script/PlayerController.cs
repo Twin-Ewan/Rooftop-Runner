@@ -47,13 +47,14 @@ public class PlayerController : MonoBehaviour
         else if (!Input.GetButton("Jump") && !isGrounded) applyJumpGravity = false;
 
         // Increased speed by speedupAmount every mutliple of disTreshold (increase by 1 every 100 metres, etc.)
-        // and when it does the first time it speeds it up, it'll toggle speedup to true so it doesn't get repeated
+        // and when it does the first time it speeds it up, it'll toggle speedup to true so it only happens once
         if ((int)this.transform.position.x % disThreshold == 0)
         {
             if (spedup) return;
             else spedup = true;
 
             // For some reason the force applied isn't the force applied: it's 50x smaller? i.e 1 = 0.02
+            // but as we speedupAmount is 1/100th of it's actual value we can just half it to get the number we need
             RB.AddForce(new Vector2(speedupAmount / 2, 0));
         }
         else if ((int)this.transform.position.x % disThreshold == 1) spedup = false;
@@ -61,7 +62,7 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        // Applies jumpGravity to conteract gravity as a percentage (25% = 25% of regular gravity)
+        // Applies jumpGravity to conteract gravity as a percentage (25 = 25% of gravity)
         if (applyJumpGravity) RB.AddForce(Physics.gravity * (jumpGravity / 100) - Physics.gravity, ForceMode.Acceleration);
     }
 
