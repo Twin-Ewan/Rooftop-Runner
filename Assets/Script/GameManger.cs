@@ -1,5 +1,10 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
 
 public class GameManger : MonoBehaviour
@@ -12,6 +17,12 @@ public class GameManger : MonoBehaviour
     float WaitTime = 1;
 
     [SerializeField] Text DisText;
+    float playerDist;
+
+    [SerializeField] GameObject gameplayCanvas, gameOverCanvas;
+    [SerializeField] TextMeshProUGUI scoreText;
+    [SerializeField] TextMeshProUGUI[] highscoreText;
+
     GameObject Player;
     Rigidbody PlayerRB;
 
@@ -26,7 +37,45 @@ public class GameManger : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        DisText.text = "Distance: " + (int)(Player.transform.position.x * 10);
+        if (Player != null) playerDist = Player.transform.position.x * 10;
+        if (playerDist > 0) DisText.text = "Distance: " + (int)playerDist;
+    }
+
+    public void BTN_Exit()
+    {
+        Application.Quit();
+    }
+
+    public void BTN_Retry()
+    {
+        SceneManager.LoadScene("Gameplay");
+        Time.timeScale = 1;
+    }
+
+    public void GameOver()
+    {
+        gameplayCanvas.SetActive(false);
+        gameOverCanvas.SetActive(true);
+
+        Time.timeScale = 0;
+
+        // Creates a list of the highscores
+        List<int> Highscores = new List<int>();
+        for (int i = 0; i < 5; i++) Highscores.Add(PlayerPrefs.GetInt("Highscore" + i));
+
+        // Adds it to the lists and sorts it from lowest to Highest
+        Highscores.Add((int)playerDist);
+        Highscores.Sort();
+
+        // Then displays them whilst writing them to player's prefs
+        // Starts at 1 to skip the lowest score, which is not a highscore
+        for (int i = 1; i < Highscores.Count; i++)
+        {
+            highscoreText[i - 1].text = (-i + 6) + ": " + Highscores[i].ToString();
+            PlayerPrefs.SetInt("Highscore" + (i - 1), Highscores[i]);
+        }
+
+        scoreText.text = "Your Distance: " + ((int)playerDist).ToString();
     }
 
     Color CreateColour()
@@ -154,8 +203,6 @@ public class GameManger : MonoBehaviour
                 }
             }
 
-            // Top Half
-            if (index == 2) { }
         }
         Destroy(BuildingGO.transform.parent.gameObject, 15);
         oldScaleModifierX = ScaleModifier.x;

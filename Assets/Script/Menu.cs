@@ -5,8 +5,8 @@ using UnityEngine.UI;
 
 public class Menu : MonoBehaviour
 {
-    [SerializeField] GameObject loadingText, OptionsCanvas, MenuCanvas;
-    [SerializeField] TextMeshProUGUI highscoreText;
+    [SerializeField] GameObject loadingText, HighscoreCanvas, OptionsCanvas, MenuCanvas;
+    [SerializeField] TextMeshProUGUI[] highscoreText;
 
     // Volume Variables
     [SerializeField] public Text VolumeText;
@@ -17,15 +17,20 @@ public class Menu : MonoBehaviour
 
     bool goodGraphics = false;
 
-    Resolution oldResolution;
-
-
     void Start()
     {
         audioSource = this.GetComponent<AudioSource>();
-
-        if (PlayerPrefs.HasKey("Highscore")) highscoreText.text = "Highscore: " + PlayerPrefs.GetFloat("Highscore").ToString();
-        else highscoreText.gameObject.SetActive(false);
+        
+        // Checks to see if there's already highscores (aka have you played the game before)
+        // and if not sets them automatically
+        if (!PlayerPrefs.HasKey("Highscore0"))
+        {
+            PlayerPrefs.SetInt("Highscore0", 1000);
+            PlayerPrefs.SetInt("Highscore1", 2500);
+            PlayerPrefs.SetInt("Highscore2", 5000);
+            PlayerPrefs.SetInt("Highscore3", 10000);
+            PlayerPrefs.SetInt("Highscore4", 25000);
+        }
     }
 
     void Update()
@@ -41,6 +46,38 @@ public class Menu : MonoBehaviour
     {
         SceneManager.LoadScene("Gameplay");
         loadingText.SetActive(true);
+    }
+
+    public void BTN_Highscores()
+    {
+        HighscoreCanvas.SetActive(true);
+        MenuCanvas.SetActive(false);
+
+        int i = 0;
+        foreach(TextMeshProUGUI t in highscoreText) 
+        {
+            t.text = (-i + highscoreText.Length) + ": " + PlayerPrefs.GetInt("Highscore" + i).ToString();
+            i++;
+        }
+        
+    }
+
+    public void BTN_ResetHighscores()
+    {
+        PlayerPrefs.SetInt("Highscore0", 1000);
+        PlayerPrefs.SetInt("Highscore1", 2500);
+        PlayerPrefs.SetInt("Highscore2", 5000);
+        PlayerPrefs.SetInt("Highscore3", 10000);
+        PlayerPrefs.SetInt("Highscore4", 25000);
+
+        // Updates the list
+        BTN_Highscores();
+    }
+
+    public void BTN_HighscoreExit()
+    {
+        MenuCanvas.SetActive(true);
+        HighscoreCanvas.SetActive(false);
     }
 
     public void BTN_Options()
@@ -79,8 +116,6 @@ public class Menu : MonoBehaviour
         PlayerPrefs.SetFloat("Volume", VolumeSlider.value/100);
         OptionsCanvas.SetActive(false);
         MenuCanvas.SetActive(true);
-
-        print(PlayerPrefs.GetFloat("Volume"));
     }
 
     public void BTN_Exit()

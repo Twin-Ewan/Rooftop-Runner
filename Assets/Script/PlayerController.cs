@@ -58,6 +58,13 @@ public class PlayerController : MonoBehaviour
             RB.AddForce(new Vector2(speedupAmount / 2, 0));
         }
         else if ((int)this.transform.position.x % disThreshold == 1) spedup = false;
+
+        // GameOvers the player whenever they move too slow or fall
+        if (RB.velocity.x < 5 || transform.position.y < -20)
+        {
+            GameObject.Find("GameManger").GetComponent<GameManger>().GameOver();
+            Destroy(this.gameObject);
+        }
     }
 
     void FixedUpdate()

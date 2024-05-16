@@ -14,6 +14,7 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        this.transform.position = new Vector3(Player.transform.position.x + 10, startPos.y, startPos.z);
+        // When player dies they get deleted so this is to stop errors
+        if(Player != null) this.transform.position = new Vector3(Player.transform.position.x + 10, startPos.y, startPos.z);
     }
 }
