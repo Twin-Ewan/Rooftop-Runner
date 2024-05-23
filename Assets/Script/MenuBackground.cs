@@ -20,6 +20,9 @@ public class MenuBackground: MonoBehaviour
     void Start()
     {
         StartCoroutine(SpawnManager());
+
+        // Spawns 20 of buildings to make the background fill up at start
+        for (int i = 0; i < 100; i++) SpawnBuilding();
     }
 
     Color CreateColour()

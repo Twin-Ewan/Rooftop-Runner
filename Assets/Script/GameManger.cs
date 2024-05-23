@@ -1,24 +1,27 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
 
 public class GameManger : MonoBehaviour
 {
+    [Header("Building Variables")]
     [SerializeField] GameObject Buliding;
     [SerializeField] GameObject RoofPrefab;
     [SerializeField] GameObject[] Addons;
 
-    float oldScaleModifierX = 0;
+    [Range(0f, 15f)]
+    [SerializeField] float BuildingDist;
+
+    float oldScaleModifierX, oldScaleModifierY = 0;
     float WaitTime = 1;
 
     [SerializeField] Text DisText;
     float playerDist;
 
+    [Header("UI Variables")]
     [SerializeField] GameObject gameplayCanvas, gameOverCanvas;
     [SerializeField] TextMeshProUGUI scoreText;
     [SerializeField] TextMeshProUGUI[] highscoreText;
@@ -37,7 +40,7 @@ public class GameManger : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Player != null) playerDist = Player.transform.position.x * 10;
+        playerDist = Player.transform.position.x * 10;
         if (playerDist > 0) DisText.text = "Distance: " + (int)playerDist;
     }
 
@@ -98,19 +101,26 @@ public class GameManger : MonoBehaviour
     void SpawnBuilding()
     {
         Color Colour = CreateColour();
-        Vector2 BuilidngSpawnPos = new Vector2(Player.transform.position.x + 50, -13);
+        Vector3 BuilidngSpawnPos = new Vector3(Player.transform.position.x + 60, -100, Random.Range(-1, 2) * BuildingDist);
 
         GameObject BuildingPoint = new GameObject("Building");
         BuildingPoint.transform.position = BuilidngSpawnPos;
 
         GameObject BuildingGO = Instantiate(Buliding, BuildingPoint.transform);
 
-        Vector3 ScaleModifier = new Vector3(Random.Range(5f, 15f), Random.Range(8f, 13f), Random.Range(2f, 6f));
+        Vector3 ScaleModifier = new Vector3(Random.Range(5f, 15f), Random.Range(-BuilidngSpawnPos.y - 2, -BuilidngSpawnPos.y + 3), Random.Range(4f, 8f));
 
-        BuildingGO.GetComponentInChildren<Renderer>().material.color = Colour;
+        // Chapstick (Lip Protection): Checks if current building is .5 close to the previous' height
+        // increases the height to avoid situations where the player dies to the building when it was only 0.001 higher
+        if (oldScaleModifierY + .5f > ScaleModifier.y  && oldScaleModifierY - .5f < ScaleModifier.y)
+        {
+            ScaleModifier = new Vector3(ScaleModifier.x, ScaleModifier.y + 1f, ScaleModifier.z);
+        }
         BuildingGO.transform.localScale = ScaleModifier;
 
+        BuildingGO.GetComponentInChildren<Renderer>().material.color = Colour;
         WaitTime = (ScaleModifier.x + oldScaleModifierX) / PlayerRB.velocity.x/2;
+
 
         // Adds a roof onto the building 75% of the time
         if (Random.Range(0, 4) != 0)
@@ -128,26 +138,24 @@ public class GameManger : MonoBehaviour
                 GORoofChildTrans[i] = GORoof.transform.GetChild(i).GetComponent<Transform>();
             }
 
-            BuilidngSpawnPos = new Vector3(BuilidngSpawnPos.x, 0, 0);
-
             // Back wall
-            GORoofChildTrans[0].position = new Vector3(BuilidngSpawnPos.x, ScaleModifier.y - 13f,
-                ScaleModifier.z / 2 - Seperation);
+            GORoofChildTrans[0].position = new Vector3(BuilidngSpawnPos.x, ScaleModifier.y + BuilidngSpawnPos.y,
+                (ScaleModifier.z / 2 - Seperation) + BuilidngSpawnPos.z);
             GORoofChildTrans[0].localScale = new Vector3(ScaleModifier.x, .5f, 0.4f);
 
             // Front wall
-            GORoofChildTrans[1].position = new Vector3(BuilidngSpawnPos.x, ScaleModifier.y - 13f,
-                -(ScaleModifier.z / 2 - Seperation));
+            GORoofChildTrans[1].position = new Vector3(BuilidngSpawnPos.x, ScaleModifier.y + BuilidngSpawnPos.y,
+                -(ScaleModifier.z / 2 - Seperation) + BuilidngSpawnPos.z);
             GORoofChildTrans[1].localScale = new Vector3(ScaleModifier.x, .5f, 0.4f);
 
             // Right wall
             GORoofChildTrans[2].position = new Vector3(ScaleModifier.x / 2 - Seperation + BuilidngSpawnPos.x,
-                ScaleModifier.y - 13f, 0);
+                ScaleModifier.y + BuilidngSpawnPos.y, BuilidngSpawnPos.z);
             GORoofChildTrans[2].localScale = new Vector3(0.4f, .5f, ScaleModifier.z);
 
             // Left wall
             GORoofChildTrans[3].position = new Vector3(-(ScaleModifier.x / 2 - Seperation) + BuilidngSpawnPos.x,
-                ScaleModifier.y - 13f, 0);
+                ScaleModifier.y + BuilidngSpawnPos.y, BuilidngSpawnPos.z);
             GORoofChildTrans[3].localScale = new Vector3(0.4f, .5f, ScaleModifier.z);
 
             // Sets all the colours for the walls
@@ -196,7 +204,7 @@ public class GameManger : MonoBehaviour
                         Quaternion.identity, BuildingPoint.transform);
 
                     // Will make fence stretch across the whole building and have variable height
-                    GOAddon.transform.localScale = new Vector3(ScaleModifier.x - Seperation, Random.Range(1f, 2.5f),
+                    GOAddon.transform.localScale = new Vector3(ScaleModifier.x - Seperation, Random.Range(2f, 2.5f),
                         ScaleModifier.z - Seperation);
 
                     GOAddon.GetComponent<Renderer>().material.color = Colour;
@@ -206,5 +214,6 @@ public class GameManger : MonoBehaviour
         }
         Destroy(BuildingGO.transform.parent.gameObject, 15);
         oldScaleModifierX = ScaleModifier.x;
+        oldScaleModifierY = ScaleModifier.y;
     }
 }

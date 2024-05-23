@@ -59,6 +59,14 @@ public class PlayerController : MonoBehaviour
         if (Input.GetButton("Jump") && !isGrounded) applyJumpGravity = true;
         else if (!Input.GetButton("Jump") && !isGrounded) applyJumpGravity = false;
 
+
+        float moveSpeedFactor = 10;
+        float horizontalInput = -Input.GetAxis("Horizontal");
+        // Gets the value of the Horizontal input axis (supports controller and such)
+
+        float newXPos = transform.position.z + horizontalInput * moveSpeedFactor * Time.deltaTime;
+        transform.Translate(new Vector3(0, 0, horizontalInput) * moveSpeedFactor * Time.deltaTime);
+
         // Increased speed by speedupAmount every mutliple of disTreshold (increase by 1 every 100 metres, etc.)
         // and when it does the first time it speeds it up, it'll toggle speedup to true so it only happens once
         if ((int)this.transform.position.x % disThreshold == 0)
@@ -73,7 +81,7 @@ public class PlayerController : MonoBehaviour
         else if ((int)this.transform.position.x % disThreshold == 1) spedup = false;
 
         // GameOvers the player whenever they move too slow or fall
-        if (RB.velocity.x < 5 || transform.position.y < -20)
+        if (RB.velocity.x < 5 || transform.position.y < -10)
         {
             this.enabled = false;
             audioSource.PlayOneShot(audioDie, audioVolume);
