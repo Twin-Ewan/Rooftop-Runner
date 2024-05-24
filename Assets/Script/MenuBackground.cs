@@ -21,7 +21,7 @@ public class MenuBackground: MonoBehaviour
     {
         StartCoroutine(SpawnManager());
 
-        // Spawns 20 of buildings to make the background fill up at start
+        // Spawns 100 of buildings to make the background fill up at start
         for (int i = 0; i < 100; i++) SpawnBuilding();
     }
 
@@ -154,6 +154,6 @@ public class MenuBackground: MonoBehaviour
             // Top Half
             if (index == 2) { }
         }
-        Destroy(BuildingGO.transform.parent.gameObject, 60);
+        Destroy(BuildingGO.transform.parent.gameObject, 300);
     }
 }

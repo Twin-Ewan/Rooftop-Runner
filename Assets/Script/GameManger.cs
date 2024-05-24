@@ -101,7 +101,7 @@ public class GameManger : MonoBehaviour
     void SpawnBuilding()
     {
         Color Colour = CreateColour();
-        Vector3 BuilidngSpawnPos = new Vector3(Player.transform.position.x + 60, -100, Random.Range(-1, 2) * BuildingDist);
+        Vector3 BuilidngSpawnPos = new Vector3(Player.transform.position.x + 100, -100, Random.Range(-1, 2) * BuildingDist);
 
         GameObject BuildingPoint = new GameObject("Building");
         BuildingPoint.transform.position = BuilidngSpawnPos;

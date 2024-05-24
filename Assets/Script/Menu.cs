@@ -5,8 +5,10 @@ using UnityEngine.UI;
 
 public class Menu : MonoBehaviour
 {
-    [SerializeField] GameObject loadingText, HighscoreCanvas, OptionsCanvas, MenuCanvas;
+    [SerializeField] GameObject loadingText, InstructionsCanvas, HighscoreCanvas, OptionsCanvas, MenuCanvas;
     [SerializeField] TextMeshProUGUI[] highscoreText;
+
+    [SerializeField] Button instructionsBTN;
 
     // Volume Variables
     [SerializeField] public Text VolumeText;
@@ -30,6 +32,9 @@ public class Menu : MonoBehaviour
             PlayerPrefs.SetInt("Highscore2", 5000);
             PlayerPrefs.SetInt("Highscore3", 10000);
             PlayerPrefs.SetInt("Highscore4", 25000);
+
+            // Changes the button's colour to highlight it
+            instructionsBTN.image.color = Color.yellow;
         }
     }
 
@@ -80,6 +85,20 @@ public class Menu : MonoBehaviour
         HighscoreCanvas.SetActive(false);
     }
 
+    public void BTN_Instruct()
+    {
+        instructionsBTN.image.color = new Color(.9176f, .3607f, .5137f, 0.7843f); // #EA5C83, The usual colour
+
+        MenuCanvas.SetActive(false);
+        InstructionsCanvas.SetActive(true);
+    }
+
+    public void BTN_InstructExit()
+    {
+        MenuCanvas.SetActive(true);
+        InstructionsCanvas.SetActive(false);
+    }
+
     public void BTN_Options()
     {
         OptionsCanvas.SetActive(true);
@@ -90,7 +109,7 @@ public class Menu : MonoBehaviour
     {
         if ((VolumeSlider.value) == 50) VolumeText.text = "Volume: Normal";
         else if ((VolumeSlider.value) == 100) VolumeText.text = "Volume: Maximum";
-        else if ((VolumeSlider.value) == 0) VolumeText.text = "Volume: Minimum";
+        else if ((VolumeSlider.value) == 0) VolumeText.text = "Volume: Muted";
         else VolumeText.text = "Volume: " + (VolumeSlider.value).ToString() + "%";
 
         volChange = true;
